@@ -22,10 +22,11 @@ interface PageProps {
 }
 
 interface DocumentState {
+  fileType: FileType;
   fileName: string | null;
   xml: string | null;
   python: string | null;
-  inSync: boolean;
+  pythonClean: boolean;
 }
 
 interface MutablePageState {
@@ -54,10 +55,11 @@ export default class Page extends Component<PageProps, PageState> {
       files: [],
 
       doc: {
+        fileType: EduBlocksXML,
         fileName: null,
         xml: null,
         python: null,
-        inSync: true,
+        pythonClean: true,
       },
     };
   }
@@ -68,22 +70,34 @@ export default class Page extends Component<PageProps, PageState> {
   }
 
   private renameDocument(fileName: string) {
-    const doc = {
+    if (this.state.doc.fileName) {
+      if (getFileType(fileName) !== this.state.doc.fileType) {
+        alert('You cannot change the file name extension');
+
+        return;
+      }
+    }
+
+    const doc: DocumentState = {
+      fileType: this.state.doc.fileType,
       fileName,
       xml: this.state.doc.xml,
       python: this.state.doc.python,
-      inSync: this.state.doc.inSync,
+      pythonClean: this.state.doc.pythonClean,
     };
 
     super.setState({ doc });
   }
 
   private readBlocklyContents(fileName: string, xml: string) {
-    const doc = {
+    if (this.state.doc.xml === xml) { return; }
+
+    const doc: DocumentState = {
+      fileType: EduBlocksXML,
       fileName,
       xml,
       python: null,
-      inSync: false,
+      pythonClean: true,
     };
 
     super.setState({ doc });
@@ -92,11 +106,14 @@ export default class Page extends Component<PageProps, PageState> {
   }
 
   private readPythonContents(fileName: string, python: string) {
-    const doc = {
+    if (this.state.doc.python === python) { return; }
+
+    const doc: DocumentState = {
+      fileType: PythonScript,
       fileName,
       xml: null,
       python,
-      inSync: false,
+      pythonClean: false,
     };
 
     super.setState({ doc });
@@ -105,15 +122,23 @@ export default class Page extends Component<PageProps, PageState> {
   }
 
   private updateFromBlockly(xml: string, python: string) {
-    if (this.state.doc.python !== python && !this.state.doc.inSync) {
+    if (
+      this.state.doc.xml === xml &&
+      this.state.doc.python === python
+    ) {
+      return;
+    }
+
+    if (this.state.doc.python !== python && !this.state.doc.pythonClean) {
       alert('Python changes have been overwritten!');
     }
 
-    const doc = {
+    const doc: DocumentState = {
+      fileType: EduBlocksXML,
       fileName: this.state.doc.fileName,
       xml,
       python,
-      inSync: true,
+      pythonClean: true,
     };
 
     super.setState({ doc });
@@ -122,22 +147,24 @@ export default class Page extends Component<PageProps, PageState> {
   private updateFromPython(python: string) {
     if (this.state.doc.python === python) { return; }
 
-    const doc = {
+    const doc: DocumentState = {
+      fileType: this.state.doc.fileType,
       fileName: this.state.doc.fileName,
       xml: this.state.doc.xml,
       python,
-      inSync: false,
+      pythonClean: false,
     };
 
     super.setState({ doc });
   }
 
   private new() {
-    const doc = {
+    const doc: DocumentState = {
+      fileType: EduBlocksXML,
       fileName: null,
       xml: null,
       python: null,
-      inSync: true,
+      pythonClean: true,
     };
 
     super.setState({ doc });
@@ -162,6 +189,12 @@ export default class Page extends Component<PageProps, PageState> {
   private switchView(viewMode: ViewMode): 0 {
     switch (viewMode) {
       case ViewModeBlockly:
+        if (!this.state.doc.pythonClean && this.state.doc.xml === null) {
+          alert('Block view not available');
+
+          return 0;
+        }
+
         this.setState({ viewMode: 'blockly' });
 
         return 0;
@@ -217,6 +250,11 @@ export default class Page extends Component<PageProps, PageState> {
         this.readPythonContents(file, contents);
 
         return 0;
+
+      case null:
+        alert('Unknown file type');
+
+        return 0;
     }
   }
 
@@ -228,13 +266,29 @@ export default class Page extends Component<PageProps, PageState> {
     this.updateFromPython(python);
   }
 
-  public save() {
+  public save(): 0 {
     if (!this.state.doc.fileName) {
       alert('No filename');
-      return;
+      return 0;
     }
 
-    this.props.app.sendFileAsText(this.state.doc.fileName, this.state.doc.python || '');
+    switch (this.state.doc.fileType) {
+      case EduBlocksXML:
+        this.props.app.sendFileAsText(
+          this.state.doc.fileName,
+          this.state.doc.xml || '',
+        );
+
+        return 0;
+
+      case PythonScript:
+        this.props.app.sendFileAsText(
+          this.state.doc.fileName,
+          this.state.doc.python || '',
+        );
+
+        return 0;
+    }
   }
 
   private onSelectFile(file: File) {
@@ -250,7 +304,7 @@ export default class Page extends Component<PageProps, PageState> {
       <div id="page">
         <Nav
           filename={this.state.doc.fileName}
-          sync={this.state.doc.inSync}
+          sync={this.state.doc.pythonClean}
 
           sendCode={() => this.sendCode()}
           downloadPython={() => { }}
@@ -298,7 +352,7 @@ export default class Page extends Component<PageProps, PageState> {
   }
 }
 
-function getFileType(file: string): FileType {
+function getFileType(file: string): FileType | null {
   if (file.indexOf('.xml') === file.length - 4) {
     return EduBlocksXML;
   }
@@ -307,5 +361,5 @@ function getFileType(file: string): FileType {
     return PythonScript;
   }
 
-  throw new Error('Invalid file');
+  return null;
 }

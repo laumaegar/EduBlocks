@@ -1,5 +1,6 @@
 import React = require('preact');
 import { Component } from 'preact';
+import _ = require('lodash');
 
 const ace = (self as any).ace;
 
@@ -15,8 +16,6 @@ export default class PythonView extends Component<PythonViewProps, {}> {
   private editor: any;
 
   protected componentWillReceiveProps(nextProps: PythonViewProps) {
-    console.log('nextProps.python', nextProps.python);
-
     if (nextProps.visible) {
       // Need to check visible change as well to force refresh
       if (this.getCode() !== nextProps.python || this.props.visible !== nextProps.visible) {
@@ -33,11 +32,11 @@ export default class PythonView extends Component<PythonViewProps, {}> {
     this.editor.setTheme('ace/theme/monokai');
     this.editor.getSession().setMode('ace/mode/python');
 
-    this.editor.on('change', () => {
+    this.editor.on('change', _.debounce(() => {
       const code = this.getCode();
 
       this.props.onChange(code);
-    });
+    }, 100));
   }
 
   private getCode(): string {

@@ -29,7 +29,7 @@ export default class BlocklyView extends Component<BlocklyViewProps, {}> {
         toolbox: document.getElementById('toolbox'),
       });
 
-      Blockly.addChangeListener(() => {
+      workspace.addChangeListener(() => {
         const xml = this.getXml();
         const python = this.getPython();
 
@@ -57,7 +57,7 @@ export default class BlocklyView extends Component<BlocklyViewProps, {}> {
 
     if (typeof xml === 'string') {
       const textToDom = Blockly.Xml.textToDom(xml);
-      Blockly.Xml.domToWorkspace(Blockly.mainWorkspace, textToDom);
+      Blockly.Xml.domToWorkspace(textToDom, Blockly.mainWorkspace);
     }
   }
 
