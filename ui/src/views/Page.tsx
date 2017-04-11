@@ -12,23 +12,30 @@ const ViewModePython = 'python';
 
 type ViewMode = typeof ViewModeBlockly | typeof ViewModePython;
 
+const EduBlocksXML = 'xml';
+const PythonScript = 'py';
+
+type FileType = typeof EduBlocksXML | typeof PythonScript;
+
 interface PageProps {
   app: App;
 }
 
 interface DocumentState {
-  name: string | null;
-  xml: string;
-  python: string;
+  fileName: string | null;
+  xml: string | null;
+  python: string | null;
   inSync: boolean;
 }
 
-interface PageState {
+interface MutablePageState {
   viewMode: ViewMode;
   terminalOpen: boolean;
   fileListModalOpen: boolean;
   files: string[];
+}
 
+interface PageState extends MutablePageState {
   doc: Readonly<DocumentState>;
 }
 
@@ -46,43 +53,141 @@ export default class Page extends Component<PageProps, PageState> {
       fileListModalOpen: false,
       files: [],
 
-      doc: Object.freeze({
-        name: null,
-        xml: '',
-        python: '',
+      doc: {
+        fileName: null,
+        xml: null,
+        python: null,
         inSync: true,
-      }),
+      },
     };
+  }
+
+  /** Prevent setting of doc property */
+  setState<K extends keyof MutablePageState>(state: Pick<PageState, K>): void {
+    super.setState(state);
+  }
+
+  private renameDocument(fileName: string) {
+    const doc = {
+      fileName,
+      xml: this.state.doc.xml,
+      python: this.state.doc.python,
+      inSync: this.state.doc.inSync,
+    };
+
+    super.setState({ doc });
+  }
+
+  private readBlocklyContents(fileName: string, xml: string) {
+    const doc = {
+      fileName,
+      xml,
+      python: null,
+      inSync: false,
+    };
+
+    super.setState({ doc });
+
+    this.switchView('blockly');
+  }
+
+  private readPythonContents(fileName: string, python: string) {
+    const doc = {
+      fileName,
+      xml: null,
+      python,
+      inSync: false,
+    };
+
+    super.setState({ doc });
+
+    this.switchView('python');
+  }
+
+  private updateFromBlockly(xml: string, python: string) {
+    if (this.state.doc.python !== python && !this.state.doc.inSync) {
+      alert('Python changes have been overwritten!');
+    }
+
+    const doc = {
+      fileName: this.state.doc.fileName,
+      xml,
+      python,
+      inSync: true,
+    };
+
+    super.setState({ doc });
+  }
+
+  private updateFromPython(python: string) {
+    if (this.state.doc.python === python) { return; }
+
+    const doc = {
+      fileName: this.state.doc.fileName,
+      xml: this.state.doc.xml,
+      python,
+      inSync: false,
+    };
+
+    super.setState({ doc });
+  }
+
+  private new() {
+    const doc = {
+      fileName: null,
+      xml: null,
+      python: null,
+      inSync: true,
+    };
+
+    super.setState({ doc });
+
+    this.switchView('blockly');
   }
 
   protected componentDidMount() {
 
   }
 
-  private toggleView() {
-    if (this.state.viewMode === 'blockly') {
-      this.setState({ viewMode: 'python' });
+  private toggleView(): 0 {
+    switch (this.state.viewMode) {
+      case ViewModeBlockly:
+        return this.switchView(ViewModePython);
 
-      const code = this.blocklyView.getPython();
-      this.pythonView.setCode(code);
+      case ViewModePython:
+        return this.switchView(ViewModeBlockly);
+    }
+  }
 
-    } else if (this.state.viewMode === 'python') {
-      this.setState({ viewMode: 'blockly' });
+  private switchView(viewMode: ViewMode): 0 {
+    switch (viewMode) {
+      case ViewModeBlockly:
+        this.setState({ viewMode: 'blockly' });
+
+        return 0;
+
+      case ViewModePython:
+        this.setState({ viewMode: 'python' });
+
+        return 0;
     }
   }
 
   private sendCode() {
     if (!this.terminalView) { throw new Error('No terminal'); }
 
+    if (!this.state.doc.python) {
+      alert('There is no code to run');
+
+      return;
+    }
+
     this.setState({ terminalOpen: true });
     this.terminalView.focus();
 
-    const code = this.blocklyView.getPython();
-    this.props.app.runCode(code);
+    this.props.app.runCode(this.state.doc.python);
 
-    setTimeout(() => {
-      this.terminalView.focus();
-    }, 250);
+    setTimeout(() => this.terminalView.focus(), 250);
   }
 
   public openFileListModal() {
@@ -98,70 +203,38 @@ export default class Page extends Component<PageProps, PageState> {
   public openFile(file: string) {
     this.closeFileListModal();
 
-    this.props.app.getFileAsText(file).then((contents) => {
-      if (isPythonFile(file)) {
-        this.setState({
-          doc: Object.freeze({
-            name: file,
-            xml: '',
-            python: contents,
-            inSync: false,
-          }),
-        });
+    this.props.app.getFileAsText(file).then((contents) => this.handleFileContents(file, contents));
+  }
 
-        this.setState({ viewMode: 'python' });
+  private handleFileContents(file: string, contents: string): 0 {
+    switch (getFileType(file)) {
+      case EduBlocksXML:
+        this.readBlocklyContents(file, contents);
 
-        this.pythonView.setCode(contents);
-      }
+        return 0;
 
-      // TODO XML
-    });
+      case PythonScript:
+        this.readPythonContents(file, contents);
+
+        return 0;
+    }
   }
 
   public onBlocklyChange(xml: string, python: string) {
-    this.setState({
-      doc: Object.freeze({
-        name: this.state.doc.name,
-        xml,
-        python,
-        inSync: true,
-      }),
-    });
+    this.updateFromBlockly(xml, python);
   }
 
   public onPythonChange(python: string) {
-    if (this.state.doc.python === python) { return; }
-
-    this.setState({
-      doc: Object.freeze({
-        name: this.state.doc.name,
-        xml: this.state.doc.xml,
-        python,
-        inSync: false,
-      }),
-    });
+    this.updateFromPython(python);
   }
 
   public save() {
-    // const code = this.pythonView.getCode();
-
-    if (!this.state.doc.name) {
+    if (!this.state.doc.fileName) {
       alert('No filename');
       return;
     }
 
-    this.props.app.sendFileAsText(this.state.doc.name, this.state.doc.python);
-  }
-
-  private onChangeName(file: string) {
-    this.setState({
-      doc: Object.freeze({
-        name: file,
-        xml: this.state.doc.xml,
-        python: this.state.doc.python,
-        inSync: this.state.doc.inSync,
-      }),
-    });
+    this.props.app.sendFileAsText(this.state.doc.fileName, this.state.doc.python || '');
   }
 
   private onSelectFile(file: File) {
@@ -176,15 +249,16 @@ export default class Page extends Component<PageProps, PageState> {
     return (
       <div id="page">
         <Nav
-          filename={this.state.doc.name}
+          filename={this.state.doc.fileName}
           sync={this.state.doc.inSync}
 
           sendCode={() => this.sendCode()}
           downloadPython={() => { }}
           openCode={() => this.openFileListModal()}
           saveCode={() => this.save()}
+          newCode={() => this.new()}
 
-          onChangeName={(file) => this.onChangeName(file)}
+          onChangeName={(file) => this.renameDocument(file)}
           onSelectFile={(file) => this.onSelectFile(file)} />
 
         <section id="workspace">
@@ -199,11 +273,13 @@ export default class Page extends Component<PageProps, PageState> {
           <BlocklyView
             ref={(c) => this.blocklyView = c}
             visible={this.state.viewMode === 'blockly'}
+            xml={this.state.doc.xml}
             onChange={(xml, python) => this.onBlocklyChange(xml, python)} />
 
           <PythonView
             ref={(c) => this.pythonView = c}
             visible={this.state.viewMode === 'python'}
+            python={this.state.doc.python}
             onChange={(python) => this.onPythonChange(python)} />
         </section>
 
@@ -222,6 +298,14 @@ export default class Page extends Component<PageProps, PageState> {
   }
 }
 
-function isPythonFile(file: string) {
-  return file.indexOf('.py') === file.length - 3;
+function getFileType(file: string): FileType {
+  if (file.indexOf('.xml') === file.length - 4) {
+    return EduBlocksXML;
+  }
+
+  if (file.indexOf('.py') === file.length - 3) {
+    return PythonScript;
+  }
+
+  throw new Error('Invalid file');
 }

@@ -3,6 +3,8 @@ import { Component } from 'preact';
 
 interface NavProps {
   downloadPython(): void;
+
+  newCode(): void;
   openCode(): void;
   saveCode(): void;
   sendCode(): void;
@@ -40,6 +42,10 @@ export default class Nav extends Component<NavProps, {}> {
         <div class="menu">
           <a class="button" title="Download Python Source Code" href="javascript:void(0)" onClick={() => this.props.downloadPython()}>
             Python Download
+          </a>
+
+          <a class="button" title="New" href="javascript:void(0)" onClick={() => this.props.newCode()}>
+            New
           </a>
 
           <a class="button icon-folder-open" title="Open a file" href="javascript:void(0)" onClick={() => this.props.openCode()}>

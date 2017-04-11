@@ -5,6 +5,7 @@ const ace = (self as any).ace;
 
 interface PythonViewProps {
   visible: boolean;
+  python: string | null;
 
   onChange(python: string): void;
 }
@@ -12,6 +13,17 @@ interface PythonViewProps {
 export default class PythonView extends Component<PythonViewProps, {}> {
   private editorDiv?: Element;
   private editor: any;
+
+  protected componentWillReceiveProps(nextProps: PythonViewProps) {
+    console.log('nextProps.python', nextProps.python);
+
+    if (nextProps.visible) {
+      // Need to check visible change as well to force refresh
+      if (this.getCode() !== nextProps.python || this.props.visible !== nextProps.visible) {
+        this.setCode(nextProps.python);
+      }
+    }
+  }
 
   protected componentDidMount() {
     if (!this.editorDiv) { throw new Error('No editor div'); }
@@ -21,26 +33,19 @@ export default class PythonView extends Component<PythonViewProps, {}> {
     this.editor.setTheme('ace/theme/monokai');
     this.editor.getSession().setMode('ace/mode/python');
 
-    // let warningShown = false;
-
     this.editor.on('change', () => {
-      // if (!warningShown) {
-      //   alert('Warning, return to block view will overwrite your changes');
-
-      //   warningShown = true;
-      // }
-
       const code = this.getCode();
+
       this.props.onChange(code);
     });
   }
 
-  public getCode(): string {
+  private getCode(): string {
     return this.editor.getValue();
   }
 
-  public setCode(code: string) {
-    this.editor.setValue(code);
+  private setCode(code: string | null) {
+    this.editor.setValue(code || '');
   }
 
   public render() {

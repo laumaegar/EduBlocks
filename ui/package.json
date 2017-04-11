@@ -8,6 +8,7 @@
     "watch": "tsc --watch & watchify src/main.js -o build/main.js",
     "start": "electron .",
     "inline": "http-server -p 8765 & inliner http://localhost:8765/ | gzip > build/webrepl-inlined.html.gz",
+    "inline-uc": "http-server -p 8765 & inliner http://localhost:8765/ > build/webrepl-inlined.html",
     "lint": "tslint src/**/*.ts"
   },
   "repository": "https://github.com/electron/electron-quick-start",
@@ -31,6 +32,7 @@
     "watchify": "^3.9.0"
   },
   "dependencies": {
+    "blockly": "^1.0.0",
     "lodash": "^4.17.4",
     "picnic": "^6.3.2",
     "preact": "^8.1.0"
