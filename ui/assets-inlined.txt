@@ -1,0 +1,8 @@
+blockly/media/sprites.png
+blockly/media/handopen.cur
+blockly/media/handclosed.cur
+blockly/media/click.mp3
+blockly/media/disconnect.mp3
+blockly/media/delete.mp3
+
+logo.png

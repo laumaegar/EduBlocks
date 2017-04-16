@@ -29,14 +29,12 @@ interface DocumentState {
   pythonClean: boolean;
 }
 
-interface MutablePageState {
+interface PageState {
   viewMode: ViewMode;
   terminalOpen: boolean;
   fileListModalOpen: boolean;
   files: string[];
-}
 
-interface PageState extends MutablePageState {
   doc: Readonly<DocumentState>;
 }
 
@@ -49,7 +47,7 @@ export default class Page extends Component<PageProps, PageState> {
     super();
 
     this.state = {
-      viewMode: 'blockly',
+      viewMode: ViewModeBlockly,
       terminalOpen: false,
       fileListModalOpen: false,
       files: [],
@@ -64,14 +62,17 @@ export default class Page extends Component<PageProps, PageState> {
     };
   }
 
-  /** Prevent setting of doc property */
-  setState<K extends keyof MutablePageState>(state: Pick<PageState, K>): void {
-    super.setState(state);
-  }
-
   private renameDocument(fileName: string) {
+    const inferredType = getFileType(fileName);
+
+    if (inferredType === null) {
+      fileName = `${fileName}.${EduBlocksXML}`;
+    }
+
+    const fileType = inferredType || EduBlocksXML;
+
     if (this.state.doc.fileName) {
-      if (getFileType(fileName) !== this.state.doc.fileType) {
+      if (fileType !== this.state.doc.fileType) {
         alert('You cannot change the file name extension');
 
         return;
@@ -86,7 +87,13 @@ export default class Page extends Component<PageProps, PageState> {
       pythonClean: this.state.doc.pythonClean,
     };
 
-    super.setState({ doc });
+    this.setState({ doc });
+
+    if (fileType === PythonScript) {
+      this.switchView(ViewModePython);
+    } else {
+      this.switchView(ViewModeBlockly);
+    }
   }
 
   private readBlocklyContents(fileName: string, xml: string) {
@@ -100,9 +107,9 @@ export default class Page extends Component<PageProps, PageState> {
       pythonClean: true,
     };
 
-    super.setState({ doc });
+    this.setState({ doc });
 
-    this.switchView('blockly');
+    this.switchView(ViewModeBlockly);
   }
 
   private readPythonContents(fileName: string, python: string) {
@@ -116,9 +123,9 @@ export default class Page extends Component<PageProps, PageState> {
       pythonClean: false,
     };
 
-    super.setState({ doc });
+    this.setState({ doc });
 
-    this.switchView('python');
+    this.switchView(ViewModePython);
   }
 
   private updateFromBlockly(xml: string, python: string) {
@@ -141,7 +148,7 @@ export default class Page extends Component<PageProps, PageState> {
       pythonClean: true,
     };
 
-    super.setState({ doc });
+    this.setState({ doc });
   }
 
   private updateFromPython(python: string) {
@@ -155,7 +162,7 @@ export default class Page extends Component<PageProps, PageState> {
       pythonClean: false,
     };
 
-    super.setState({ doc });
+    this.setState({ doc });
   }
 
   private new() {
@@ -167,7 +174,7 @@ export default class Page extends Component<PageProps, PageState> {
       pythonClean: true,
     };
 
-    super.setState({ doc });
+    this.setState({ doc });
 
     this.switchView('blockly');
   }
@@ -268,7 +275,16 @@ export default class Page extends Component<PageProps, PageState> {
 
   public save(): 0 {
     if (!this.state.doc.fileName) {
-      alert('No filename');
+      const fileName = prompt('Enter filename');
+
+      if (fileName) {
+        this.renameDocument(fileName);
+      }
+    }
+
+    if (!this.state.doc.fileName) {
+      alert('You must specify a filename in order to save');
+
       return 0;
     }
 

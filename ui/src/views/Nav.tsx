@@ -18,7 +18,11 @@ interface NavProps {
 
 export default class Nav extends Component<NavProps, {}> {
   private changeName() {
-    this.props.onChangeName(prompt('Enter new filename', this.props.filename || '') || '');
+    const fileName = prompt('Enter new filename', this.props.filename || '');
+
+    if (fileName) {
+      this.props.onChangeName(fileName);
+    }
   }
 
   private onFileSelected(target: any) {

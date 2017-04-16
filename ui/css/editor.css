@@ -2,6 +2,12 @@ body {
   height: auto;
 }
 
+.loading-message {
+  font-size: 100px;
+  color: #aaa;
+  text-align: center;
+}
+
 #page {
   height: 100%;
   width: 100%;
