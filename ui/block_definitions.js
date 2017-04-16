@@ -1418,7 +1418,7 @@ Blockly.Blocks['comment_block'] = {
 		.appendField(new Blockly.FieldTextInput(""), "comment");
 		this.setPreviousStatement(true, null);
 		this.setNextStatement(true, null);
-		this.setColour(80);
+		this.setColour(336);
 		this.setTooltip('Add a comment');
 		this.setHelpUrl('https://docs.python.org/3/library');
   }
