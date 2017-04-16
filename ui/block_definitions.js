@@ -1411,6 +1411,31 @@ Blockly.Blocks['senseinit'] = {
   }
 };
 
+Blockly.Blocks['comment_block'] = {
+  init: function() {
+	  this.appendDummyInput()
+		.appendField("#")
+		.appendField(new Blockly.FieldTextInput(""), "comment");
+		this.setPreviousStatement(true, null);
+		this.setNextStatement(true, null);
+		this.setColour(80);
+		this.setTooltip('Add a comment');
+		this.setHelpUrl('https://docs.python.org/3/library');
+  }
+};
+
+Blockly.Blocks['code_block'] = {
+  init: function() {
+	  this.appendDummyInput()
+		.appendField(new Blockly.FieldTextInput(""), "code");
+		this.setPreviousStatement(true, null);
+		this.setNextStatement(true, null);
+		this.setColour(336);
+		this.setTooltip('Add a line of Python code');
+		this.setHelpUrl('https://docs.python.org/3/library/http.client.html');
+  }
+};
+
 Blockly.Blocks['http_client_import_rest'] = {
   init: function() {
     this.appendDummyInput()
