@@ -22,5 +22,7 @@ else
 fi
 
 cd $LOCALREPO
+git checkout master
+
 bash ./install.sh
 
