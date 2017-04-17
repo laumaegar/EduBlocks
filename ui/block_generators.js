@@ -358,17 +358,6 @@ Blockly.Python['for'] = function(block) {
   return code;
 };
 
-Blockly.JavaScript['advancedforloop'] = function(block) {
-  var branch = Blockly.Python.statementToCode(block, 'DO');
-  branch = Blockly.Python.addLoopTrap(branch, block.id) ||
-      Blockly.Python.PASS;
-  var text_x = block.getFieldValue('x');
-  var text_y = block.getFieldValue('y');
-  var statements_do = Blockly.JavaScript.statementToCode(block, 'DO');
-  // TODO: Assemble JavaScript into code variable.
-  var code = 'for ' +text_x+ ' in' +text_y+ ':\n' +branch; 
-  return code;
-};
 
 Blockly.Python['greater'] = function(block) {
   var text_1 = block.getFieldValue('1');
