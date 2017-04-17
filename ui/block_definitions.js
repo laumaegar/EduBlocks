@@ -10,22 +10,6 @@ Blockly.Blocks['import_edupy'] = {
   }
 };
 
-Blockly.Blocks['advancedforloop'] = {
-  init: function() {
-    this.appendDummyInput()
-        .appendField("for")
-        .appendField(new Blockly.FieldTextInput("x"), "x")
-        .appendField("in")
-        .appendField(new Blockly.FieldTextInput("y"), "y");
-    this.appendStatementInput("DO")
-        .setCheck(null);
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
-    this.setColour(336);
-    this.setTooltip('For loop for more advanced loops');
-    this.setHelpUrl('');
-  }
-};
 
 Blockly.Blocks['pass'] = {
   init: function() {
