@@ -9,6 +9,7 @@
     "start": "electron .",
     "inline": "http-server -p 8765 & inliner http://localhost:8765/ | gzip > build/webrepl-inlined.html.gz",
     "inline-uc": "http-server -p 8765 & inliner http://localhost:8765/ > build/webrepl-inlined.html",
+    "serve": "http-server",
     "lint": "tslint src/**/*.ts"
   },
   "repository": "https://github.com/electron/electron-quick-start",
