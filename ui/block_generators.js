@@ -3,6 +3,19 @@ Blockly.Python['import_edupy'] = function(block) {
   return code;
 };
 
+Blockly.Python['progression'] = function(block) {
+  var code = 'progression()\n';
+  return code;
+};
+
+Blockly.Python['setPixel'] = function(block) {
+  var index = block.getFieldValue('index');
+  var colour = block.getFieldValue('colour');
+  // TODO: Assemble Python into code variable.
+  var code = 'setPixel(' + index + ', ' + colour + ')\n';
+  return code;
+};
+
 Blockly.Python['import_sonic'] = function(block) {
   // TODO: Assemble Python into code variable.
   var code = 'from psonic import *\n';

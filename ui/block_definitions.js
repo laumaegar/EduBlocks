@@ -10,6 +10,34 @@ Blockly.Blocks['import_edupy'] = {
   }
 };
 
+Blockly.Blocks['progression'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("progression()");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(336);
+    this.setTooltip('Colour LEDs');
+    this.setHelpUrl('http://www.example.com/');
+  }
+};
+
+Blockly.Blocks['setPixel'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("setPixel(")
+        .appendField(new Blockly.FieldNumber(0, 0), "index")
+        .appendField(",")
+        .appendField(new Blockly.FieldTextInput("colour"), "colour")
+        .appendField(")");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('Use this to set a pixel');
+    this.setHelpUrl('http://www.example.com/');
+  }
+};
+
 Blockly.Blocks['df'] = {
   init: function() {
     this.appendDummyInput()
