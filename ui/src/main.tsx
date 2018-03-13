@@ -4,9 +4,11 @@ import Page from './views/Page';
 import { newApp } from './app';
 
 async function main() {
+  brython({ 'debug': 1, 'profile': 2 })
+
   const app = await newApp();
   Blockly.HSV_VALUE = 0.9;
-  
+
 
   const pageDiv = getElementByIdSafe('page');
 
@@ -28,3 +30,10 @@ async function main() {
 }
 
 window.addEventListener('load', main);
+
+// Time sleep bodge
+window.sleep = (n: number) => {
+  return new Promise<void>(function (resolve) {
+    setTimeout(resolve, n * 1000);
+  });
+};
