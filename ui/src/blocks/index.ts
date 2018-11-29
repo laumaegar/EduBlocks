@@ -130,3 +130,13 @@ export {
   getToolBoxXml,
   getBeforeScript,
 };
+
+if (extensions.indexOf('prueba') !== -1) {
+    toolBoxXml += prueba;
+  }
+ 
+function getBeforeScript(extensions: Extension[]) {
+  if (extensions.indexOf('prueba') !== -1) {
+    return fs.readFileSync(path.join(__dirname, '..', '..', 'src', 'blocks', 'prueba', 'prueba.py'));
+  }
+}
