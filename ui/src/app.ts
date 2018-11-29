@@ -80,6 +80,8 @@ async function newApp(): Promise<App> {
     return [
       'scroll:bit',
       'GiggleBot',
+      'prueba',
+      
     ];
   }
 
