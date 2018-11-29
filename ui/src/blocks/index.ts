@@ -80,6 +80,14 @@ const gigglebot = fs.readFileSync(path.join(__dirname, '..', '..', 'src', 'block
 function getToolBoxXml(extensions: Extension[]) {
   let toolBoxXml = '';
 
+import pruebaDefs from './prueba/definitions';
+import pruebaGens from './prueba/generators';
+pruebaDefs(Blockly.Blocks);
+pruebaGens(Blockly.Python as any);
+const prueba = fs.readFileSync(path.join(__dirname, '..', '..', 'src', 'blocks', 'prueba', 'toolbox.xml'));
+
+  
+  
   toolBoxXml += '<xml>';
 
   toolBoxXml += basic;
