@@ -59,6 +59,11 @@ turtleDefs(Blockly.Blocks);
 turtleGens(Blockly.Python as any);
 toolBoxXml += fs.readFileSync(path.join(__dirname, '..', '..', 'src', 'blocks', 'turtle', 'toolbox.xml'));
 
+import pruebaDefs from './prueba/definitions';
+import pruebaGens from './prueba/generators';
+mylibDefs(Blockly.Blocks);
+mylibGens(Blockly.Python as any);
+const prueba = fs.readFileSync(path.join(__dirname, '..', '..', 'src', 'blocks', 'prueba', 'toolbox.xml'));
 
 
 toolBoxXml += '</xml>';
